@@ -1,0 +1,272 @@
+﻿<Window x:Class="SpieleLernApp.Views.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:SpieleLernApp.Models"
+        Title="Lumos - LernApp"
+        Width="1280"
+        Height="720"
+        MinWidth="1000"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        Background="#101B14">
+    <Grid x:Name="RootGrid">
+        <Rectangle Fill="#7A08150C" />
+
+        <Grid Margin="48">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="1"
+                    Padding="28"
+                    CornerRadius="28"
+                    Background="#D9172219"
+                    BorderBrush="#80F4F0C8"
+                    BorderThickness="1.5"
+                    MaxWidth="820"
+                    HorizontalAlignment="Center">
+                <Grid>
+                    <StackPanel x:Name="LoadingPanel">
+                        <TextBlock Text="Lumos - LernApp wird vorbereitet"
+                                   Foreground="#FFF8F5E6"
+                                   FontSize="32"
+                                   FontWeight="SemiBold"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,14" />
+                        <TextBlock x:Name="LoadingStatusText"
+                                   Text="Lade Bilder und Startbereich..."
+                                   Foreground="#FFF2EECF"
+                                   FontSize="18"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,18" />
+
+                        <Grid Margin="0,0,0,10">
+                            <Border Height="30"
+                                    CornerRadius="15"
+                                    Background="#55FFFFFF" />
+                            <ProgressBar x:Name="LoadingProgressBar"
+                                         Height="30"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         Value="0"
+                                         BorderThickness="0"
+                                         Foreground="#FFD9C86E"
+                                         Background="Transparent" />
+                        </Grid>
+
+                        <TextBlock x:Name="LoadingPercentText"
+                                   Text="0 %"
+                                   Foreground="#FFFFFFFF"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   TextAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="PlayerSelectionPanel"
+                                Visibility="Collapsed">
+                        <TextBlock Text="Spieler auswählen"
+                                   Foreground="#FFF8F5E6"
+                                   FontSize="34"
+                                   FontWeight="Bold"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="Wähle ein gespeichertes Profil oder lege einen neuen Spieler an."
+                                   Foreground="#FFF2EECF"
+                                   FontSize="18"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,24" />
+
+                        <ListBox x:Name="PlayersListBox"
+                                 Height="260"
+                                 Background="#F9FFFBF0"
+                                 BorderBrush="#FFD9C86E"
+                                 BorderThickness="2"
+                                 Padding="8">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:PlayerProfile}">
+                                    <Border Margin="0,0,0,10"
+                                            Padding="14"
+                                            Background="#FFF4EED1"
+                                            CornerRadius="18">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="78" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Width="62"
+                                                    Height="62"
+                                                    CornerRadius="31"
+                                                    Background="#22FFFFFF"
+                                                    BorderBrush="#FFD9C86E"
+                                                    BorderThickness="2">
+                                                <Grid ClipToBounds="True">
+                                                    <Ellipse Fill="#33FFFFFF" />
+                                                    <Image Stretch="UniformToFill"
+                                                           Source="{Binding AvatarPath}" />
+                                                </Grid>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1"
+                                                        Margin="14,0,0,0">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="22"
+                                                           FontWeight="Bold"
+                                                           Foreground="#FF273219" />
+                                                <TextBlock FontSize="16"
+                                                           Foreground="#FF405236">
+                                                    <Run Text="Alter: " />
+                                                    <Run Text="{Binding Age}" />
+                                                    <Run Text="   Pokale: " />
+                                                    <Run Text="{Binding Trophies}" />
+                                                    <Run Text="   Sterne: " />
+                                                    <Run Text="{Binding Stars}" />
+                                                </TextBlock>
+                                                <TextBlock FontSize="14"
+                                                           Foreground="#FF556548">
+                                                    <Run Text="Zuletzt gespielt: " />
+                                                    <Run Text="{Binding LastPlayedAt, StringFormat=dd.MM.yyyy HH:mm}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock x:Name="SelectionMessageText"
+                                   Foreground="#FFFFD2D2"
+                                   FontSize="16"
+                                   TextAlignment="Center"
+                                   Visibility="Collapsed"
+                                   Margin="0,16,0,0" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,20,0,0">
+                            <Button x:Name="LoadPlayerButton"
+                                    Content="Spieler laden"
+                                    Width="190"
+                                    Height="46"
+                                    Margin="0,0,14,0"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Background="#FFD9C86E"
+                                    Foreground="#FF283018"
+                                    BorderThickness="0"
+                                    Click="LoadPlayerButton_Click" />
+                            <Button x:Name="CreatePlayerButton"
+                                    Content="Neuer Spieler"
+                                    Width="190"
+                                    Height="46"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Background="#FFF2EECF"
+                                    Foreground="#FF283018"
+                                    BorderThickness="0"
+                                    Click="CreatePlayerButton_Click" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel x:Name="PlayerFormPanel"
+                                Visibility="Collapsed">
+                        <TextBlock Text="Neuen Spieler anlegen"
+                                   Foreground="#FFF8F5E6"
+                                   FontSize="34"
+                                   FontWeight="Bold"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="Bitte gib den Spielernamen und das Alter ein."
+                                   Foreground="#FFF2EECF"
+                                   FontSize="18"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,24" />
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Text="Spielername"
+                                       Foreground="#FFFFFFFF"
+                                       FontSize="18"
+                                       FontWeight="SemiBold" />
+                            <TextBox x:Name="PlayerNameTextBox"
+                                     Grid.Column="1"
+                                     Height="42"
+                                     FontSize="18"
+                                     Padding="12,6"
+                                     Background="#F9FFFBF0"
+                                     BorderBrush="#FFD9C86E"
+                                     BorderThickness="2" />
+                        </Grid>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Text="Alter"
+                                       Foreground="#FFFFFFFF"
+                                       FontSize="18"
+                                       FontWeight="SemiBold" />
+                            <TextBox x:Name="PlayerAgeTextBox"
+                                     Grid.Column="1"
+                                     Height="42"
+                                     FontSize="18"
+                                     Padding="12,6"
+                                     Background="#F9FFFBF0"
+                                     BorderBrush="#FFD9C86E"
+                                     BorderThickness="2"
+                                     PreviewTextInput="PlayerAgeTextBox_PreviewTextInput" />
+                        </Grid>
+
+                        <TextBlock x:Name="ValidationMessageText"
+                                   Foreground="#FFFFD2D2"
+                                   FontSize="16"
+                                   TextAlignment="Center"
+                                   Visibility="Collapsed"
+                                   Margin="0,0,0,16" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <Button x:Name="BackToSelectionButton"
+                                    Content="Zurück"
+                                    Width="160"
+                                    Height="48"
+                                    Margin="0,0,12,0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Background="#FFF2EECF"
+                                    Foreground="#FF283018"
+                                    BorderThickness="0"
+                                    Visibility="Collapsed"
+                                    Click="BackToSelectionButton_Click" />
+
+                            <Button x:Name="ConfirmButton"
+                                    Content="OK"
+                                    Width="160"
+                                    Height="48"
+                                    HorizontalAlignment="Center"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Background="#FFD9C86E"
+                                    Foreground="#FF283018"
+                                    BorderThickness="0"
+                                    Click="ConfirmButton_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

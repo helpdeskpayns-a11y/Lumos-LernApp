@@ -1,0 +1,245 @@
+﻿<Window x:Class="SpieleLernApp.Views.Class1MathWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Klasse 1 - Mathe"
+        Width="1280"
+        Height="720"
+        MinWidth="1080"
+        MinHeight="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#122018">
+    <Grid x:Name="RootGrid">
+        <Rectangle Fill="#3A122018" />
+
+        <Grid Margin="34">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Padding="22,18"
+                    Background="#D6172219"
+                    CornerRadius="24"
+                    BorderBrush="#99F6ECC0"
+                    BorderThickness="1.5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Klasse 1 - Mathe"
+                                   FontSize="34"
+                                   FontWeight="Bold"
+                                   Foreground="#FFFDFBEF" />
+                        <TextBlock Text="Erster Lernbereich: Zahlen und Operationen"
+                                   Margin="0,8,0,0"
+                                   FontSize="18"
+                                   Foreground="#FFF1EFD9" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Padding="18,10"
+                            Background="#E8FFF7DD"
+                            CornerRadius="18">
+                        <StackPanel>
+                            <TextBlock Text="Sterne gesamt"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       Foreground="#FF273219" />
+                            <TextBlock x:Name="TotalStarsTextBlock"
+                                       Margin="0,4,0,0"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#FF273219" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1"
+                  Margin="0,26,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Padding="20"
+                        Background="#D6172219"
+                        CornerRadius="24"
+                        BorderBrush="#99F6ECC0"
+                        BorderThickness="1.5">
+                    <StackPanel>
+                        <Border Height="190"
+                                CornerRadius="20"
+                                ClipToBounds="True">
+                            <Image x:Name="ClassImage"
+                                   Stretch="UniformToFill" />
+                        </Border>
+
+                        <TextBlock Text="Dein Bereich"
+                                   Margin="0,18,0,0"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#FFFDFBEF" />
+                        <TextBlock Text="Hier startest du mit ersten Matheaufgaben für Klasse 1."
+                                   Margin="0,8,0,0"
+                                   FontSize="16"
+                                   TextWrapping="Wrap"
+                                   Foreground="#FFF1EFD9" />
+
+                        <Border Margin="0,18,0,0"
+                                Padding="16"
+                                Background="#E8FFF7DD"
+                                CornerRadius="18">
+                            <StackPanel>
+                                <TextBlock Text="Fortschritt"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Foreground="#FF273219" />
+                                <TextBlock x:Name="ProgressTextBlock"
+                                           Margin="0,8,0,0"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="#FF273219" />
+                                <TextBlock x:Name="SessionStarsTextBlock"
+                                           Margin="0,8,0,0"
+                                           FontSize="16"
+                                           Foreground="#FF405236" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1"
+                        Margin="24,0,0,0"
+                        Padding="24"
+                        Background="#D6172219"
+                        CornerRadius="24"
+                        BorderBrush="#99F6ECC0"
+                        BorderThickness="1.5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock x:Name="TaskTitleTextBlock"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="#FFFDFBEF" />
+                            <TextBlock x:Name="TaskPromptTextBlock"
+                                       Margin="0,14,0,0"
+                                       FontSize="30"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Foreground="#FFFFFFFF" />
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="1"
+                                     Margin="0,28,0,0"
+                                     Rows="2"
+                                     Columns="2">
+                            <Button x:Name="AnswerButton0"
+                                    Margin="0,0,12,12"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Padding="18"
+                                    Background="#E8FFF7DD"
+                                    Foreground="#FF273219"
+                                    BorderThickness="0"
+                                    Click="AnswerButton_Click"
+                                    Tag="0" />
+                            <Button x:Name="AnswerButton1"
+                                    Margin="12,0,0,12"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Padding="18"
+                                    Background="#E8FFF7DD"
+                                    Foreground="#FF273219"
+                                    BorderThickness="0"
+                                    Click="AnswerButton_Click"
+                                    Tag="1" />
+                            <Button x:Name="AnswerButton2"
+                                    Margin="0,12,12,0"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Padding="18"
+                                    Background="#E8FFF7DD"
+                                    Foreground="#FF273219"
+                                    BorderThickness="0"
+                                    Click="AnswerButton_Click"
+                                    Tag="2" />
+                            <Button x:Name="AnswerButton3"
+                                    Margin="12,12,0,0"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Padding="18"
+                                    Background="#E8FFF7DD"
+                                    Foreground="#FF273219"
+                                    BorderThickness="0"
+                                    Click="AnswerButton_Click"
+                                    Tag="3" />
+                        </UniformGrid>
+
+                        <Border Grid.Row="2"
+                                Margin="0,28,0,0"
+                                Padding="18"
+                                Background="#E8FFF7DD"
+                                CornerRadius="20"
+                                VerticalAlignment="Top">
+                            <TextBlock x:Name="FeedbackTextBlock"
+                                       FontSize="18"
+                                       TextWrapping="Wrap"
+                                       Foreground="#FF273219" />
+                        </Border>
+
+                        <StackPanel Grid.Row="3"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,24,0,0">
+                            <Button x:Name="NewRoundButton"
+                                    Content="Neue Runde"
+                                    Width="160"
+                                    Height="46"
+                                    Margin="0,0,12,0"
+                                    Background="#FFF2EECF"
+                                    Foreground="#FF273219"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    BorderThickness="0"
+                                    Visibility="Collapsed"
+                                    Click="NewRoundButton_Click" />
+                    <Button Content="Schließen"
+                                    Width="150"
+                                    Height="46"
+                                    Margin="0,0,12,0"
+                                    Background="#FFF2EECF"
+                                    Foreground="#FF273219"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    BorderThickness="0"
+                                    Click="CloseButton_Click" />
+                            <Button x:Name="NextButton"
+                                    Content="Weiter"
+                                    Width="150"
+                                    Height="46"
+                                    Background="#FFD9C86E"
+                                    Foreground="#FF273219"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    BorderThickness="0"
+                                    Visibility="Collapsed"
+                                    Click="NextButton_Click" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
