@@ -18,7 +18,9 @@ namespace SpieleLernApp.Views;
 
 public partial class MainMenuWindow : Window
 {
-    private const int QuestionsPerRound = 10;
+    private const int PortalQuestionsPerRound = 10;
+    private const int WorldQuestionsPerLevel = 4;
+    private const int FullTaskPoolRequestCount = 1000;
     private const int PortalRewardPerSubject = 10;
     private const int WorldRewardPerSubject = 1;
     private const int DefaultPortalUnlockRequirement = 40;
@@ -568,7 +570,7 @@ public partial class MainMenuWindow : Window
         }
 
         SessionRewardTextBlock.Text = _activeRewardTrack == RewardTrack.WorldStars
-            ? $"Level-Fortschritt: {_currentCorrectAnswers} / {QuestionsPerRound} richtig. Sterne gibt es erst am Insel-Stern."
+            ? $"Level-Fortschritt: {_currentCorrectAnswers} / {GetQuestionCountForTrack(_activeRewardTrack)} richtig. Sterne gibt es erst am Insel-Stern."
             : $"{GetRewardPluralLabel(_activeRewardTrack)} in dieser Runde: {GetCurrentRoundRewardPreview()}";
         MathNextButton.Visibility = Visibility.Visible;
         MathNextButton.Content = _currentTaskIndex == _currentTasks.Count - 1 ? "Abschließen" : "Weiter";
@@ -834,7 +836,7 @@ public partial class MainMenuWindow : Window
 
         ShowDetailPanel(
             $"Welt Klasse {_activeClassLevel} - {subjectName}",
-            $"Lumos ist auf der {subjectName}-Insel angekommen. Von hier aus startet Level {_activeWorldLevel} mit 10 Aufgaben.");
+            $"Lumos ist auf der {subjectName}-Insel angekommen. Von hier aus startet Level {_activeWorldLevel} mit {GetQuestionCountForTrack(RewardTrack.WorldStars)} Aufgaben.");
         ApplyFullscreenDetailPanelLayout();
 
         WorldIslandTitleTextBlock.Text = subject == LearningSubject.Bonus && _activeClassLevel == 4
@@ -994,19 +996,60 @@ public partial class MainMenuWindow : Window
             return GenerateClass4BonusRoundTasks();
         }
 
+        if (rewardTrack == RewardTrack.WorldStars)
+        {
+            return GenerateWorldTasksWithoutRepeats(subject, classLevel);
+        }
+
         return _taskGeneratorFactory.GenerateTasks(new TaskGenerationRequest
         {
             Subject = subject,
             ClassLevel = classLevel,
-            TaskCount = QuestionsPerRound,
+            TaskCount = GetQuestionCountForTrack(rewardTrack),
             Track = rewardTrack
         }).ToList();
+    }
+
+    private List<LearningTask> GenerateWorldTasksWithoutRepeats(LearningSubject subject, int classLevel)
+    {
+        WorldMapProgress progress = GetWorldMapProgress(classLevel, subject);
+        progress.UsedTaskPrompts ??= [];
+
+        List<LearningTask> uniquePool = _taskGeneratorFactory.GenerateTasks(new TaskGenerationRequest
+        {
+            Subject = subject,
+            ClassLevel = classLevel,
+            TaskCount = FullTaskPoolRequestCount,
+            Track = RewardTrack.WorldStars
+        })
+            .GroupBy(task => task.Prompt, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToList();
+
+        int requiredTaskCount = GetQuestionCountForTrack(RewardTrack.WorldStars);
+        List<LearningTask> freshTasks = uniquePool
+            .Where(task => !progress.UsedTaskPrompts.Contains(task.Prompt, StringComparer.Ordinal))
+            .Take(requiredTaskCount)
+            .ToList();
+
+        if (freshTasks.Count >= requiredTaskCount)
+        {
+            return freshTasks;
+        }
+
+        progress.UsedTaskPrompts.Clear();
+        return uniquePool
+            .Take(requiredTaskCount)
+            .ToList();
     }
 
     private List<LearningTask> GenerateClass3BonusRoundTasks()
     {
         Random random = new();
         List<LearningTask> mixedPool = [];
+        WorldMapProgress progress = GetWorldMapProgress(3, LearningSubject.Bonus);
+        progress.UsedTaskPrompts ??= [];
+        int requiredTaskCount = GetQuestionCountForTrack(RewardTrack.WorldStars);
 
         foreach (LearningSubject subject in Class3BonusMixSubjects)
         {
@@ -1014,16 +1057,42 @@ public partial class MainMenuWindow : Window
             {
                 Subject = subject,
                 ClassLevel = 3,
-                TaskCount = QuestionsPerRound,
+                TaskCount = FullTaskPoolRequestCount,
                 Track = RewardTrack.WorldStars
             }));
         }
 
-        return mixedPool
+        List<LearningTask> uniquePool = mixedPool
             .GroupBy(task => task.Prompt, StringComparer.Ordinal)
             .Select(group => group.First())
+            .ToList();
+
+        List<LearningTask> freshTasks = uniquePool
             .OrderBy(_ => random.Next())
-            .Take(QuestionsPerRound)
+            .Where(task => !progress.UsedTaskPrompts.Contains(task.Prompt, StringComparer.Ordinal))
+            .Take(requiredTaskCount)
+            .Select((task, index) => new LearningTask
+            {
+                Title = $"Aufgabe {index + 1}",
+                Prompt = task.Prompt,
+                Answers = task.Answers.ToArray(),
+                CorrectAnswerIndex = task.CorrectAnswerIndex,
+                SuccessText = task.SuccessText,
+                Topic = task.Topic,
+                Subject = task.Subject,
+                ClassLevel = task.ClassLevel
+            })
+            .ToList();
+
+        if (freshTasks.Count >= requiredTaskCount)
+        {
+            return freshTasks;
+        }
+
+        progress.UsedTaskPrompts.Clear();
+        return uniquePool
+            .OrderBy(_ => random.Next())
+            .Take(requiredTaskCount)
             .Select((task, index) => new LearningTask
             {
                 Title = $"Aufgabe {index + 1}",
@@ -1042,6 +1111,9 @@ public partial class MainMenuWindow : Window
     {
         Random random = new();
         List<LearningTask> mixedPool = [];
+        WorldMapProgress progress = GetWorldMapProgress(4, LearningSubject.Bonus);
+        progress.UsedTaskPrompts ??= [];
+        int requiredTaskCount = GetQuestionCountForTrack(RewardTrack.WorldStars);
 
         foreach (LearningSubject subject in Class4BonusMixSubjects)
         {
@@ -1049,16 +1121,42 @@ public partial class MainMenuWindow : Window
             {
                 Subject = subject,
                 ClassLevel = 4,
-                TaskCount = QuestionsPerRound,
+                TaskCount = FullTaskPoolRequestCount,
                 Track = RewardTrack.WorldStars
             }));
         }
 
-        return mixedPool
+        List<LearningTask> uniquePool = mixedPool
             .GroupBy(task => task.Prompt, StringComparer.Ordinal)
             .Select(group => group.First())
+            .ToList();
+
+        List<LearningTask> freshTasks = uniquePool
             .OrderBy(_ => random.Next())
-            .Take(QuestionsPerRound)
+            .Where(task => !progress.UsedTaskPrompts.Contains(task.Prompt, StringComparer.Ordinal))
+            .Take(requiredTaskCount)
+            .Select((task, index) => new LearningTask
+            {
+                Title = $"Aufgabe {index + 1}",
+                Prompt = task.Prompt,
+                Answers = task.Answers.ToArray(),
+                CorrectAnswerIndex = task.CorrectAnswerIndex,
+                SuccessText = task.SuccessText,
+                Topic = task.Topic,
+                Subject = task.Subject,
+                ClassLevel = task.ClassLevel
+            })
+            .ToList();
+
+        if (freshTasks.Count >= requiredTaskCount)
+        {
+            return freshTasks;
+        }
+
+        progress.UsedTaskPrompts.Clear();
+        return uniquePool
+            .OrderBy(_ => random.Next())
+            .Take(requiredTaskCount)
             .Select((task, index) => new LearningTask
             {
                 Title = $"Aufgabe {index + 1}",
@@ -1087,11 +1185,11 @@ public partial class MainMenuWindow : Window
         TaskTitleTextBlock.Text = $"{GetSubjectDisplayName(task.Subject)} - {task.Topic}";
         TaskPromptTextBlock.Text = task.Prompt;
         FeedbackTextBlock.Text = _activeRewardTrack == RewardTrack.WorldStars
-            ? $"Level {_activeWorldLevel}: Löse alle {QuestionsPerRound} Aufgaben richtig, damit Lumos zum nächsten Punkt der Map läuft."
+            ? $"Level {_activeWorldLevel}: Löse alle {GetQuestionCountForTrack(_activeRewardTrack)} Aufgaben richtig, damit Lumos zum nächsten Punkt der Map läuft."
             : $"Wähle die richtige Antwort aus. Nach der Runde kannst du neue {GetRewardPluralLabel(_activeRewardTrack).ToLowerInvariant()} einsammeln.";
         ProgressTextBlock.Text = $"{_currentTaskIndex + 1} / {_currentTasks.Count}";
         SessionRewardTextBlock.Text = _activeRewardTrack == RewardTrack.WorldStars
-            ? $"Level-Fortschritt: {_currentCorrectAnswers} / {QuestionsPerRound} richtig. Keine Sterne im Level."
+            ? $"Level-Fortschritt: {_currentCorrectAnswers} / {GetQuestionCountForTrack(_activeRewardTrack)} richtig. Keine Sterne im Level."
             : $"{GetRewardPluralLabel(_activeRewardTrack)} in dieser Runde: {GetCurrentRoundRewardPreview()}";
         TotalRewardLabelTextBlock.Text = _activeRewardTrack == RewardTrack.WorldStars
             ? "Sterne durch Insel-Sterne"
@@ -1164,7 +1262,7 @@ public partial class MainMenuWindow : Window
 
         if (_activeRewardTrack == RewardTrack.WorldStars && _activeSubject is not null)
         {
-            if (_currentCorrectAnswers == QuestionsPerRound)
+            if (_currentCorrectAnswers == GetQuestionCountForTrack(_activeRewardTrack))
             {
                 mapProgressMessage = AdvanceWorldMapProgress(_activeClassLevel, _activeSubject.Value);
                 _shouldReturnToWorldMapAfterCollect = true;
@@ -1172,7 +1270,8 @@ public partial class MainMenuWindow : Window
             }
             else
             {
-                mapProgressMessage = $" Level {_activeWorldLevel} ist noch nicht abgeschlossen. Für den nächsten Schritt auf der Map brauchst du diesmal {QuestionsPerRound} von {QuestionsPerRound} richtigen Antworten.";
+                int requiredTaskCount = GetQuestionCountForTrack(_activeRewardTrack);
+                mapProgressMessage = $" Level {_activeWorldLevel} ist noch nicht abgeschlossen. Für den nächsten Schritt auf der Map brauchst du diesmal {requiredTaskCount} von {requiredTaskCount} richtigen Antworten.";
             }
         }
 
@@ -1187,13 +1286,13 @@ public partial class MainMenuWindow : Window
 
         if (gainedPoints > 0)
         {
-            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {QuestionsPerRound} Fragen richtig gelöst.{mapProgressMessage} Jetzt kannst du {gainedPoints} {rewardLabel.ToLowerInvariant()} einsammeln.";
+            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {GetQuestionCountForTrack(_activeRewardTrack)} Fragen richtig gelöst.{mapProgressMessage} Jetzt kannst du {gainedPoints} {rewardLabel.ToLowerInvariant()} einsammeln.";
             CollectRewardButton.Content = $"{rewardLabel} einsammeln";
             CollectRewardButton.Visibility = Visibility.Visible;
         }
         else
         {
-            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {QuestionsPerRound} Fragen richtig gelöst.{mapProgressMessage} Dieses Fach steht bereits bei {previousPoints} von {PortalRewardPerSubject}, daher gibt es diesmal keine neuen {rewardLabel.ToLowerInvariant()}.";
+            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {GetQuestionCountForTrack(_activeRewardTrack)} Fragen richtig gelöst.{mapProgressMessage} Dieses Fach steht bereits bei {previousPoints} von {PortalRewardPerSubject}, daher gibt es diesmal keine neuen {rewardLabel.ToLowerInvariant()}.";
             MathNewRoundButton.Content = _returnToWorldMapInsteadOfNewRound ? "Zurück zur Map" : "Neue Runde";
             MathNewRoundButton.Visibility = Visibility.Visible;
         }
@@ -1208,7 +1307,9 @@ public partial class MainMenuWindow : Window
 
     private void FinishWorldLevelSession(LearningSubject subject, string subjectName)
     {
-        bool levelSolved = _currentCorrectAnswers == QuestionsPerRound;
+        int requiredTaskCount = GetQuestionCountForTrack(RewardTrack.WorldStars);
+        bool levelSolved = _currentCorrectAnswers == requiredTaskCount;
+        RememberUsedWorldTaskPrompts(subject);
 
         TaskTitleTextBlock.Text = "Level beendet";
         TaskPromptTextBlock.Text = $"Du hast Level {_activeWorldLevel} der {subjectName}-Insel gespielt.";
@@ -1225,7 +1326,7 @@ public partial class MainMenuWindow : Window
 
         if (!levelSolved)
         {
-            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {QuestionsPerRound} Fragen richtig gelöst. Level {_activeWorldLevel} bleibt aktiv, bis alle {QuestionsPerRound} Aufgaben richtig sind.";
+            FeedbackTextBlock.Text = $"Du hast {_currentCorrectAnswers} von {requiredTaskCount} Fragen richtig gelöst. Level {_activeWorldLevel} bleibt aktiv, bis alle {requiredTaskCount} Aufgaben richtig sind.";
             MathNewRoundButton.Content = "Level wiederholen";
             MathNewRoundButton.Visibility = Visibility.Visible;
             return;
@@ -1243,7 +1344,7 @@ public partial class MainMenuWindow : Window
             _returnToWorldMapInsteadOfNewRound = true;
             _animateWorldMoveOnNextMapOpen = true;
 
-            FeedbackTextBlock.Text = $"Perfekt: Du hast alle {QuestionsPerRound} Aufgaben richtig gelöst.{mapProgressMessage} Jetzt kannst du den Stern einsammeln.";
+            FeedbackTextBlock.Text = $"Perfekt: Du hast alle {requiredTaskCount} Aufgaben richtig gelöst.{mapProgressMessage} Jetzt kannst du den Stern einsammeln.";
             SessionRewardTextBlock.Text = $"Sterne in dieser Runde: {_pendingRewardGain}";
             CollectRewardButton.Content = "Stern einsammeln";
             CollectRewardButton.Visibility = _hasPendingReward ? Visibility.Visible : Visibility.Collapsed;
@@ -1252,7 +1353,7 @@ public partial class MainMenuWindow : Window
             return;
         }
 
-        FeedbackTextBlock.Text = $"Perfekt: Du hast alle {QuestionsPerRound} Aufgaben richtig gelöst.{mapProgressMessage}";
+        FeedbackTextBlock.Text = $"Perfekt: Du hast alle {requiredTaskCount} Aufgaben richtig gelöst.{mapProgressMessage}";
         MathNewRoundButton.Content = "Zurück zur Map";
         MathNewRoundButton.Visibility = Visibility.Visible;
         _returnToWorldMapInsteadOfNewRound = true;
@@ -1738,13 +1839,13 @@ public partial class MainMenuWindow : Window
         {
             return subject switch
             {
-                LearningSubject.German => "Lumos steht auf der Deutsch-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
-                LearningSubject.Math => "Lumos steht auf der Mathe-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
-                LearningSubject.Sachunterricht => "Lumos steht auf der Sachkunde-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
-                LearningSubject.Logic => "Lumos steht auf der Logik-Insel. Auf der Klasse-3-Map nutzt Logik die orange Insel. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
-                LearningSubject.Music => "Lumos steht auf der Musik-Insel. Auf der Klasse-3-Map nutzt Musik die pinke Insel. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
-                LearningSubject.Bonus => "Lumos steht auf der Bonus-Insel. Hier gibt es 3 Bonus-Level mit gemischten Fragen aus allen Klasse-3-Fächern. Danach wartet ein Extra-Stern.",
-                _ => "Lumos steht auf der passenden Insel. Jedes Level hat 10 Aufgaben."
+                LearningSubject.German => $"Lumos steht auf der Deutsch-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
+                LearningSubject.Math => $"Lumos steht auf der Mathe-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
+                LearningSubject.Sachunterricht => $"Lumos steht auf der Sachkunde-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
+                LearningSubject.Logic => $"Lumos steht auf der Logik-Insel. Auf der Klasse-3-Map nutzt Logik die orange Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
+                LearningSubject.Music => $"Lumos steht auf der Musik-Insel. Auf der Klasse-3-Map nutzt Musik die pinke Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Ziel-Stern erreicht.",
+                LearningSubject.Bonus => $"Lumos steht auf der Bonus-Insel. Hier gibt es 3 Bonus-Level mit je {WorldQuestionsPerLevel} gemischten Fragen aus allen Klasse-3-Fächern. Danach wartet ein Extra-Stern.",
+                _ => $"Lumos steht auf der passenden Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben."
             };
         }
 
@@ -1752,14 +1853,14 @@ public partial class MainMenuWindow : Window
         {
             return subject switch
             {
-                LearningSubject.German => "Lumos steht auf der Deutsch-Insel von Klasse 4. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.Math => "Lumos steht auf der Mathe-Insel von Klasse 4. Auf der Karte ist das die blaue Mathe-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.Sachunterricht => "Lumos steht auf der Sachkunde-Insel von Klasse 4. Auf der Karte ist das die grüne Mittelinsel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.Music => "Lumos steht auf der Musik-Insel von Klasse 4. Auf der Karte nutzt Musik die Medien-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.Art => "Lumos steht auf der Kunst-Insel von Klasse 4. Auf der Karte nutzt Kunst die Kreativitäts-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.English => "Lumos steht auf der Englisch-Insel von Klasse 4. Auf der Karte nutzt Englisch die Projekt-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
-                LearningSubject.Bonus => "Lumos steht auf der Meisterinsel. Hier gibt es 3 Bonus-Level mit gemischten Fragen aus allen Klasse-4-Fächern. Danach wartet ein Extra-Stern.",
-                _ => "Lumos steht auf der passenden Insel. Jedes Level hat 10 Aufgaben."
+                LearningSubject.German => $"Lumos steht auf der Deutsch-Insel von Klasse 4. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.Math => $"Lumos steht auf der Mathe-Insel von Klasse 4. Auf der Karte ist das die blaue Mathe-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.Sachunterricht => $"Lumos steht auf der Sachkunde-Insel von Klasse 4. Auf der Karte ist das die grüne Mittelinsel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.Music => $"Lumos steht auf der Musik-Insel von Klasse 4. Auf der Karte nutzt Musik die Medien-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.Art => $"Lumos steht auf der Kunst-Insel von Klasse 4. Auf der Karte nutzt Kunst die Kreativitäts-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.English => $"Lumos steht auf der Englisch-Insel von Klasse 4. Auf der Karte nutzt Englisch die Projekt-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Ziel-Stern der Insel.",
+                LearningSubject.Bonus => $"Lumos steht auf der Meisterinsel. Hier gibt es 3 Bonus-Level mit je {WorldQuestionsPerLevel} gemischten Fragen aus allen Klasse-4-Fächern. Danach wartet ein Extra-Stern.",
+                _ => $"Lumos steht auf der passenden Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben."
             };
         }
 
@@ -1767,22 +1868,22 @@ public partial class MainMenuWindow : Window
         {
             return subject switch
             {
-                LearningSubject.German => "Lumos steht auf der Deutsch-/Sprach-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-                LearningSubject.Math => "Lumos steht auf der Mathe-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-                LearningSubject.Sachunterricht => "Lumos steht auf der Sachkunde-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-                LearningSubject.Logic => "Lumos steht auf der Logik-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-                LearningSubject.Music => "Lumos steht auf der Musik-Insel. Auf der Klasse-2-Map nutzt sie die blaue Medien-Insel. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-                _ => "Lumos steht auf der passenden Insel. Jedes Level hat 10 Aufgaben."
+                LearningSubject.German => $"Lumos steht auf der Deutsch-/Sprach-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+                LearningSubject.Math => $"Lumos steht auf der Mathe-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+                LearningSubject.Sachunterricht => $"Lumos steht auf der Sachkunde-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+                LearningSubject.Logic => $"Lumos steht auf der Logik-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+                LearningSubject.Music => $"Lumos steht auf der Musik-Insel. Auf der Klasse-2-Map nutzt sie die blaue Medien-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+                _ => $"Lumos steht auf der passenden Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben."
             };
         }
 
         return subject switch
         {
-            LearningSubject.Math => "Lumos steht auf der Mathematik-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-            LearningSubject.German => "Lumos steht auf der Deutsch-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-            LearningSubject.Sachunterricht => "Lumos steht auf der Sachkunde-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-            LearningSubject.Music => "Lumos steht auf der Kreativ-/Musik-Insel. Jedes Level hat 10 Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
-            _ => "Lumos steht auf der passenden Insel. Jedes Level hat 10 Aufgaben."
+            LearningSubject.Math => $"Lumos steht auf der Mathematik-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+            LearningSubject.German => $"Lumos steht auf der Deutsch-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+            LearningSubject.Sachunterricht => $"Lumos steht auf der Sachkunde-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+            LearningSubject.Music => $"Lumos steht auf der Kreativ-/Musik-Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst, wenn Lumos den Insel-Stern erreicht.",
+            _ => $"Lumos steht auf der passenden Insel. Jedes Level hat {WorldQuestionsPerLevel} Aufgaben."
         };
     }
 
@@ -1926,6 +2027,7 @@ public partial class MainMenuWindow : Window
             int maxLevels = GetWorldLevelCount(classLevel, subject);
             progress.CompletedLevels = Math.Max(0, Math.Min(maxLevels, progress.CompletedLevels));
             progress.StarCollected = progress.StarCollected || progress.CompletedLevels >= maxLevels;
+            progress.UsedTaskPrompts ??= [];
             return progress;
         }
 
@@ -1936,6 +2038,22 @@ public partial class MainMenuWindow : Window
         };
         _playerProfile.WorldMapProgress.Add(progress);
         return progress;
+    }
+
+    private void RememberUsedWorldTaskPrompts(LearningSubject subject)
+    {
+        WorldMapProgress progress = GetWorldMapProgress(_activeClassLevel, subject);
+        progress.UsedTaskPrompts ??= [];
+
+        foreach (string prompt in _currentTasks.Select(task => task.Prompt).Distinct(StringComparer.Ordinal))
+        {
+            if (!progress.UsedTaskPrompts.Contains(prompt, StringComparer.Ordinal))
+            {
+                progress.UsedTaskPrompts.Add(prompt);
+            }
+        }
+
+        progress.UpdatedAt = DateTime.Now;
     }
 
     private static int GetWorldLevelCount(int classLevel, LearningSubject subject)
@@ -2378,7 +2496,7 @@ public partial class MainMenuWindow : Window
     {
         string rewardText = rewardTrack == RewardTrack.PortalTrophies
             ? "Hier sammelst du pro richtiger Aufgabe Pokale und holst sie nach der Runde ab."
-            : "Hier spielst du ein Map-Level mit 10 Aufgaben. Sterne gibt es erst am Insel-Stern.";
+            : $"Hier spielst du ein Map-Level mit {WorldQuestionsPerLevel} Aufgaben. Sterne gibt es erst am Insel-Stern.";
 
         if (classLevel == 2)
         {
@@ -2436,6 +2554,11 @@ public partial class MainMenuWindow : Window
     private static string GetRewardPluralLabel(RewardTrack rewardTrack)
     {
         return rewardTrack == RewardTrack.PortalTrophies ? "Pokale" : "Sterne";
+    }
+
+    private static int GetQuestionCountForTrack(RewardTrack rewardTrack)
+    {
+        return rewardTrack == RewardTrack.WorldStars ? WorldQuestionsPerLevel : PortalQuestionsPerRound;
     }
 
     private static void WriteMenuErrorLog(string source, Exception exception, string context)

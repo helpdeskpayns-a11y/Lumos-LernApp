@@ -1008,3 +1008,36 @@ Ab diesem Punkt wird jeder groessere Schritt im Projekt in dieser Datei festgeha
   - Das Inno-Setup-Skript liegt jetzt ebenfalls eindeutig als `UTF-8 mit BOM` vor, damit der Installer Umlaute auf anderen PCs verlaesslich uebernimmt.
   - Die aktualisierte Setupdatei wurde neu erzeugt.
 - Naechster Schritt: Den neuen Installer auf dem Test-PC erneut installieren und die Umlaute in Setup und App noch einmal live pruefen.
+
+### 2026-04-30 - Welt-Level auf neue Aufgaben pro Runde umgestellt
+- Anfrage: In jeder Welt sollten pro Level neue Fragen erscheinen. Bereits gespielte Aufgaben sollen im naechsten Level nicht direkt wiederverwendet werden. Zusaetzlich sollte geprueft werden, wie viele Fragen pro Runde tatsaechlich sinnvoll sind.
+- Analyse:
+  - Ein Messlauf ueber alle Generatoren mit `TaskCount = 1000` zeigte, dass die Welt-Aufgabenpools je nach Fach und Klasse aktuell nur zwischen `21` und `28` eindeutige Aufgaben enthalten.
+  - Mit der bisherigen Weltgroesse von `10` Aufgaben pro Level waeren bei `5` Welt-Leveln pro Insel mindestens `50` unterschiedliche Aufgaben noetig gewesen. Das war mit den vorhandenen Pools nicht stabil moeglich.
+- Entscheidung:
+  - Lernportal-Runden bleiben bei `10` Aufgaben.
+  - Welt-Level werden auf `4` Aufgaben pro Level reduziert.
+  - Bereits gespielte Welt-Aufgaben werden pro Klasse und Fach ueber den Prompt gespeichert und fuer das naechste Level uebersprungen, bis der verfuegbare Pool erschoepft ist.
+  - Auch die Bonus-/Meisterinseln nutzen jetzt dieses Verhalten und spielen ihre gemischten Aufgaben mit derselben Welt-Level-Groesse.
+- Aktion:
+  - In `WorldMapProgress` wurde eine Liste fuer bereits verwendete Aufgaben-Prompts ergaenzt.
+  - Beim Laden bestehender Profile werden die verwendeten Prompts ueber alte Weltfortschritte hinweg zusammengefuehrt.
+  - Die Welt-Task-Generierung wurde auf prompt-basierte Duplikatvermeidung umgestellt.
+  - Doppelte Aufgaben innerhalb derselben Welt-Runde werden jetzt ebenfalls entfernt.
+  - Alle Welt- und Introtexte wurden auf die neue Aufgabenanzahl angepasst.
+- Ergebnis:
+  - Lernportal: `10` Aufgaben pro Runde.
+  - Welt/Fachinsel: `4` Aufgaben pro Level.
+  - Bereits gespielte Welt-Aufgaben werden erst dann wiederverwendet, wenn der eindeutige Pool eines Fachs aufgebraucht ist.
+- Naechster Schritt: Den Ablauf in der App einmal live pruefen, besonders mehrfache Levelstarts derselben Insel und den Uebergang von Level zu Level.
+
+### 2026-04-30 - Installer mit neuer Welt-Logik neu gebaut und lokal installiert
+- Anfrage: Die neuen Aenderungen sollten direkt in die Setupdatei uebernommen, lokal installiert und anschliessend in Git veroeffentlicht werden.
+- Aktion:
+  - Die Setupdatei wurde nach der Umstellung der Welt-Level und der neuen Aufgabenfilterung frisch neu gebaut.
+  - Die Installation wurde direkt ueber die bestehende Version auf `E:\Program Files\Lumos - LernApp` ausgefuehrt.
+  - Die installierte EXE wurde danach am Zielpfad verifiziert.
+- Ergebnis:
+  - Die aktuelle Installer-Datei liegt vor als `artifacts\installer\Lumos-LernApp-Setup-1.0.0.exe`.
+  - Die installierte App auf `E:\Program Files\Lumos - LernApp\Lumos-LernApp.exe` enthaelt den neuen Stand.
+- Naechster Schritt: Den aktualisierten Projektstand nach GitHub pushen und die Welt-Level in der installierten App einmal kurz im Spielfluss pruefen.

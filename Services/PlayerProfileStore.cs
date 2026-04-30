@@ -98,6 +98,11 @@ public sealed class PlayerProfileStore
                         .ThenByDescending(progress => progress.UpdatedAt)
                         .First();
 
+                    bestProgress.UsedTaskPrompts = group
+                        .SelectMany(progress => progress.UsedTaskPrompts ?? [])
+                        .Distinct(StringComparer.Ordinal)
+                        .ToList();
+
                     int maxLevels = (bestProgress.ClassLevel == 3 || bestProgress.ClassLevel == 4) &&
                         bestProgress.Subject == LearningSubject.Bonus ? 3 : 5;
                     bestProgress.CompletedLevels = Math.Max(0, Math.Min(maxLevels, bestProgress.CompletedLevels));

@@ -10,5 +10,7 @@ public sealed class WorldMapProgress
 
     public bool StarCollected { get; set; }
 
+    public List<string> UsedTaskPrompts { get; set; } = [];
+
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 }
