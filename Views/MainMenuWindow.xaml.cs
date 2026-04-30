@@ -2440,13 +2440,12 @@ public partial class MainMenuWindow : Window
 
     private static void WriteMenuErrorLog(string source, Exception exception, string context)
     {
-        string logPath = Path.Combine(AppContext.BaseDirectory, "app-error.log");
         var logBuilder = new StringBuilder();
         logBuilder.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {source}");
         logBuilder.AppendLine(context);
         logBuilder.AppendLine(exception.ToString());
         logBuilder.AppendLine(new string('-', 60));
-        File.AppendAllText(logPath, logBuilder.ToString());
+        AppStoragePaths.AppendErrorLog(logBuilder.ToString());
     }
 
     private void SavePlayerProfile()

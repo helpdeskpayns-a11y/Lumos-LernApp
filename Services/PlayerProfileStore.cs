@@ -13,18 +13,11 @@ public sealed class PlayerProfileStore
     {
         WriteIndented = true
     };
-    private const string AppDataFolderName = "Lumos-LernApp";
-
     private readonly string _filePath;
 
     public PlayerProfileStore()
     {
-        string dataDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            AppDataFolderName,
-            "Data");
-        Directory.CreateDirectory(dataDirectory);
-        _filePath = Path.Combine(dataDirectory, "players.json");
+        _filePath = Path.Combine(AppStoragePaths.DataDirectory, "players.json");
         MigrateLegacyPlayersFileIfNeeded();
     }
 

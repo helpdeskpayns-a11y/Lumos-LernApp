@@ -72,7 +72,7 @@ public sealed class MathTaskGenerator : ILearningTaskGenerator
             CreateNumberTask("Welche Zahl fehlt? 2, 3, 4, __", 5, "Zahlenreihe", "Prima. Du hast die Zahlenreihe vervollständigt.", 1),
             CreateNumberTask("Welche Zahl fehlt? 6, 7, __", 8, "Zahlenreihe", "Prima. Du hast die Zahlenreihe vervollständigt.", 1),
             CreateNumberTask("Welche Zahl fehlt? 8, __, 10", 9, "Zahlenreihe", "Prima. Du hast die Zahlenreihe vervollständigt.", 1),
-            CreateChoiceTask("Wo sind es am meisten? 2 ?pfel oder 5 ?pfel?", "5 ?pfel", ["2 ?pfel", "beide gleich", "kein Apfel"], "Mengen", "Super. Du hast die größere Menge erkannt.", 1),
+            CreateChoiceTask("Wo sind es am meisten? 2 Äpfel oder 5 Äpfel?", "5 Äpfel", ["2 Äpfel", "beide gleich", "kein Apfel"], "Mengen", "Super. Du hast die größere Menge erkannt.", 1),
             CreateChoiceTask("Wo sind es am meisten? 4 Sterne oder 1 Stern?", "4 Sterne", ["1 Stern", "beide gleich", "0 Sterne"], "Mengen", "Super. Du hast die größere Menge erkannt.", 1),
             CreateChoiceTask("Wo sind es weniger? 3 Bälle oder 6 Bälle?", "3 Bälle", ["6 Bälle", "beide gleich", "7 Bälle"], "Mengen", "Super. Du hast die kleinere Menge erkannt.", 1),
             CreateChoiceTask("Welche Zahl liegt zwischen 4 und 6?", "5", ["3", "6", "7"], "Zahlenraum bis 10", "Klasse. Du hast die Zahl in der Mitte gefunden.", 1),
@@ -138,7 +138,7 @@ public sealed class MathTaskGenerator : ILearningTaskGenerator
             CreateChoiceTask("Welche Zahl ist das Ergebnis von 7 x 8?", "56", ["48", "54", "64"], "Einmaleins", "Gut gemacht. Du kennst die Malaufgabe.", 3),
             CreateChoiceTask("Welches Ergebnis passt zu 63 : 9?", "7", ["6", "8", "9"], "Teilen", "Prima. Du hast das Ergebnis richtig gefunden.", 3),
             CreateChoiceTask("Tom hat 3 Tüten mit je 4 Bonbons. Wie viele Bonbons sind das?", "12", ["7", "9", "16"], "Sachaufgaben", "Richtig. Du hast die Sachaufgabe gelöst.", 3),
-            CreateChoiceTask("Eine Kiste enthält 5 Reihen mit je 6 ?pfeln. Wie viele ?pfel sind es?", "30", ["11", "25", "36"], "Sachaufgaben", "Richtig. Du hast die Sachaufgabe gelöst.", 3)
+            CreateChoiceTask("Eine Kiste enthält 5 Reihen mit je 6 Äpfeln. Wie viele Äpfel sind es?", "30", ["11", "25", "36"], "Sachaufgaben", "Richtig. Du hast die Sachaufgabe gelöst.", 3)
         ];
     }
 

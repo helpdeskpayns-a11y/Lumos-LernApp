@@ -1,8 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Threading;
+using SpieleLernApp.Services;
 using SpieleLernApp.Views;
 
 namespace SpieleLernApp;
@@ -34,11 +34,10 @@ public partial class App : Application
 
     private static void WriteErrorLog(string source, Exception exception)
     {
-        string logPath = Path.Combine(AppContext.BaseDirectory, "app-error.log");
         var logBuilder = new StringBuilder();
         logBuilder.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {source}");
         logBuilder.AppendLine(exception.ToString());
         logBuilder.AppendLine(new string('-', 60));
-        File.AppendAllText(logPath, logBuilder.ToString());
+        AppStoragePaths.AppendErrorLog(logBuilder.ToString());
     }
 }

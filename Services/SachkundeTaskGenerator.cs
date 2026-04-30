@@ -131,7 +131,7 @@ public sealed class SachkundeTaskGenerator : ILearningTaskGenerator
     {
         return
         [
-            CreateChoiceTask("Welche Energiequelle ist erneuerbar?", "Sonne", ["Kohle", "?l", "Benzin"], "Energie", "Richtig. Sonnenenergie ist erneuerbar.", 3),
+            CreateChoiceTask("Welche Energiequelle ist erneuerbar?", "Sonne", ["Kohle", "Öl", "Benzin"], "Energie", "Richtig. Sonnenenergie ist erneuerbar.", 3),
             CreateChoiceTask("Welches Gerät nutzt Wind, um Strom zu erzeugen?", "Windrad", ["Toaster", "Lampe", "Wasserhahn"], "Technik", "Prima. Ein Windrad nutzt den Wind.", 3),
             CreateChoiceTask("Was brauchen Pflanzen außer Wasser besonders?", "Licht", ["Fernbedienung", "Schuhe", "Murmeln"], "Natur", "Richtig. Pflanzen brauchen Licht.", 3),
             CreateChoiceTask("Welches Tier gehört zu den Insekten?", "Biene", ["Katze", "Amsel", "Schaf"], "Tiere", "Super. Die Biene ist ein Insekt.", 3),
@@ -179,7 +179,7 @@ public sealed class SachkundeTaskGenerator : ILearningTaskGenerator
             CreateChoiceTask("Welcher Beruf hilft bei einem kaputten Stromkreis?", "Elektrikerin oder Elektriker", ["Bäckerin oder Bäcker", "Gärtnerin oder Gärtner", "Pilotin oder Pilot"], "Berufe", "Gut gemacht. Dieser Beruf arbeitet mit Strom.", 4),
             CreateChoiceTask("Was passiert mit Wasser bei 0 Grad?", "es kann gefrieren", ["es wird zu Holz", "es verschwindet sofort", "es wird immer zu Dampf"], "Natur", "Richtig. Bei 0 Grad kann Wasser gefrieren.", 4),
             CreateChoiceTask("Womit misst man die Temperatur?", "mit einem Thermometer", ["mit einem Lineal", "mit einem Löffel", "mit einer Schere"], "Forschen", "Prima. Ein Thermometer misst Temperatur.", 4),
-            CreateChoiceTask("Was ist wichtig, wenn du eine Pflanze beobachtest?", "regelmäßig schauen und notieren", ["nur einmal kurz ansehen", "sie im Dunkeln vergessen", "sie ohne Wasser lassen"], "Forschen", "Stark. Beobachten braucht Regelm??igkeit.", 4),
+            CreateChoiceTask("Was ist wichtig, wenn du eine Pflanze beobachtest?", "regelmäßig schauen und notieren", ["nur einmal kurz ansehen", "sie im Dunkeln vergessen", "sie ohne Wasser lassen"], "Forschen", "Stark. Beobachten braucht Regelmäßigkeit.", 4),
             CreateChoiceTask("Warum spart man Strom?", "um Energie und Ressourcen zu schonen", ["damit Lampen schneller tanzen", "damit Heizungen singen", "damit Stecker wachsen"], "Energie", "Richtig. Stromsparen schont Ressourcen.", 4)
         ];
     }

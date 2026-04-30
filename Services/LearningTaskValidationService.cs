@@ -169,7 +169,7 @@ public static class LearningTaskValidationService
 
     private static int CountSyllables(string word)
     {
-        MatchCollection matches = Regex.Matches(word, "[aeiouy???AEIOUY???]+", RegexOptions.CultureInvariant);
+        MatchCollection matches = Regex.Matches(word, "[aeiouyäöüAEIOUYÄÖÜ]+", RegexOptions.CultureInvariant);
         return Math.Max(1, matches.Count);
     }
 
@@ -259,12 +259,11 @@ public static class LearningTaskValidationService
             return;
         }
 
-        string logPath = Path.Combine(AppContext.BaseDirectory, "app-error.log");
         var logBuilder = new StringBuilder();
         logBuilder.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] TaskValidation");
         logBuilder.AppendLine($"{task.Subject} | Klasse {task.ClassLevel} | {task.Prompt}");
         logBuilder.AppendLine(message);
         logBuilder.AppendLine(new string('-', 60));
-        File.AppendAllText(logPath, logBuilder.ToString());
+        AppStoragePaths.AppendErrorLog(logBuilder.ToString());
     }
 }
